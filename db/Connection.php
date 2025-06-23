@@ -6,58 +6,64 @@ use Dotenv\Dotenv;
 
 class Connection
 {
+    private $conn;
 
-    private static $conn;
-
-    public static function SetConnection()
+    public function __construct()
     {
-        $connectionArray = Connection::GetDotenvEnv();
-        $serverName = Connection::GetServerNameEnv();
+        $connectionArray = $this->getDotenvEnv();
+        $serverName = $this->getServerNameEnv();
 
-        Connection::$conn = sqlsrv_connect($serverName, $connectionArray);
+        $this->conn = sqlsrv_connect($serverName, $connectionArray);
 
-        if (Connection::$conn === false) {
+        if ($this->conn === false) {
             die(print_r(sqlsrv_errors(), true));
         }
     }
 
-    public static function GetTable()
+    public function getTable()
     {
         $sql = "SELECT * FROM Table_1";
 
-        $stmt = sqlsrv_query(Connection::$conn, $sql);
+        $stmt = sqlsrv_query($this->conn, $sql);
 
         if ($stmt === false) {
             die(print_r(sqlsrv_errors(), true));
         }
+
+        // Пример: возвращаем данные как массив
+        $results = [];
+        while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+            $results[] = $row;
+        }
+
+        return $results;
     }
 
-    public static function GetListTables()
+    public function getListDatabases()
     {
         $sql = "
             SELECT name 
             FROM sys.databases 
-            WHERE database_id > 4  -- Исключаем системные БД
+            WHERE database_id > 4  
             ORDER BY name;
         ";
 
-        $stmt = sqlsrv_query($conn, $sql);
+        $stmt = sqlsrv_query($this->conn, $sql);
 
         if ($stmt === false) {
             die("Ошибка выполнения запроса: " . print_r(sqlsrv_errors(), true));
         }
 
-        // Формируем HTML <ul>
-        $html = "<ul>";
+        $databases = [];
 
         while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
-            $html .= "<li>" . htmlspecialchars($row['name']) . "</li>";
+            $databases[] = $row['name'];
         }
 
-        $html .= "</ul>";
+        return $databases;
     }
 
-    private static function GetDotenvEnv()
+    private function getDotenvEnv()
     {
         $dotenv = Dotenv::createImmutable(dirname(__DIR__));
         $dotenv->load();
@@ -66,23 +72,25 @@ class Connection
         $uid = $_ENV['DB_USERNAME'];
         $pwd = $_ENV['DB_PASSWORD'];
 
-        $connectionInfo = array(
+        return [
             "Database" => $database,
             "UID" => $uid,
             "PWD" => $pwd,
             "CharacterSet" => "UTF-8",
             "ReturnDatesAsStrings" => true
-        );
-
-        return $connectionInfo;
+        ];
     }
 
-    private static function GetServerNameEnv()
+    private function getServerNameEnv()
     {
         $dotenv = Dotenv::createImmutable(dirname(__DIR__));
         $dotenv->load();
-        $serverName = $_ENV['DB_SERVER'];
 
-        return $serverName;
+        return $_ENV['DB_SERVER'];
+    }
+
+    public function getConnection()
+    {
+        return $this->conn;
     }
 }

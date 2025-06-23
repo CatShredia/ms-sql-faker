@@ -16,7 +16,8 @@ use SystemDb\Connection;
 
 $connectionClass = new Connection();
 
-$connectionClass->SetConnection();
-$connectionClass->GetTable();
+$connectionClass->getConnection();
 
-include __DIR__ . "/pages/MainPage.php";
+$renderClass = new Render();
+
+$renderClass->MainRender($connectionClass);

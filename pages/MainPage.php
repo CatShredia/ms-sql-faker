@@ -25,10 +25,13 @@
         <div class="main_container container">
             <section class="show-tables">
                 <?php
+                $dbList = $connectionClass->getListDatabases();
 
-                use Dba\Connection;
-
-                Connection::GetListTables();
+                echo "<ul>";
+                foreach ($dbList as $item) {
+                    echo "<li>" . htmlspecialchars($item) . "</li>";
+                }
+                echo "</ul>";
                 ?>
             </section>
         </div>
