@@ -20,3 +20,5 @@ $connectionClass = new Connection();
 $connectionClass->getConnection();
 
 handleRequest($connectionClass);
+
+sqlsrv_close($connectionClass->$conn);

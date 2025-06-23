@@ -130,4 +130,82 @@ class Connection
 
         sqlsrv_free_stmt($stmt);
     }
+
+    public function renderAllTablesData($dbName)
+    {
+        // Экранируем имя БД
+        $safeDbName = explode("=", $dbName)[1];
+
+        // Переключаемся на нужную БД
+        $sqlUseDb = "USE $safeDbName";
+        $stmtUseDb = sqlsrv_query($this->conn, $sqlUseDb);
+
+        if ($stmtUseDb === false) {
+            die("Ошибка подключения к БД: " . print_r(sqlsrv_errors(), true));
+        }
+        sqlsrv_free_stmt($stmtUseDb);
+
+        // Запрос на получение списка таблиц
+        $sqlTables = "
+        SELECT TABLE_NAME 
+        FROM INFORMATION_SCHEMA.TABLES 
+        WHERE TABLE_TYPE = 'BASE TABLE'
+    ";
+
+        $stmtTables = sqlsrv_query($this->conn, $sqlTables);
+
+        if ($stmtTables === false) {
+            die("Ошибка получения списка таблиц: " . print_r(sqlsrv_errors(), true));
+        }
+
+        echo "<h2>Данные из всех таблиц базы <em>" . htmlspecialchars($dbName) . "</em></h2>";
+
+        // Проходим по всем таблицам
+        while ($rowTable = sqlsrv_fetch_array($stmtTables, SQLSRV_FETCH_ASSOC)) {
+            $tableName = $rowTable['TABLE_NAME'];
+            $safeTableName = "[" . str_replace("]", "]]", $tableName) . "]";
+
+            echo "<h3>Таблица: $tableName</h3>";
+
+            // Выбираем данные из таблицы
+            $sqlData = "SELECT TOP 5 * FROM $safeTableName";
+            $stmtData = sqlsrv_query($this->conn, $sqlData);
+
+            if ($stmtData === false) {
+                echo "<p style='color:red;'>Ошибка выполнения запроса для таблицы $tableName</p>";
+                continue;
+            }
+
+            // Выводим данные в виде таблицы
+            echo "<table border='1' cellpadding='5' cellspacing='0' style='margin-bottom: 20px; border-collapse: collapse;'>";
+
+            // Заголовки столбцов
+            echo "<tr style='background-color: #f2f2f2;'>";
+            foreach (sqlsrv_field_metadata($stmtData) as $field) {
+                echo "<th>" . htmlspecialchars($field['Name']) . "</th>";
+            }
+            echo "</tr>";
+
+            // Данные
+            $hasRows = false;
+            while ($rowData = sqlsrv_fetch_array($stmtData, SQLSRV_FETCH_ASSOC)) {
+                $hasRows = true;
+                echo "<tr>";
+                foreach ($rowData as $value) {
+                    echo "<td>" . htmlspecialchars($value !== null ? (string)$value : '') . "</td>";
+                }
+                echo "</tr>";
+            }
+
+            if (!$hasRows) {
+                echo "<tr><td colspan='100'>Нет данных</td></tr>";
+            }
+
+            echo "</table>";
+
+            sqlsrv_free_stmt($stmtData);
+        }
+
+        sqlsrv_free_stmt($stmtTables);
+    }
 }
