@@ -27,6 +27,9 @@ function handleRequest($connectionClass)
             case $uri === '/':
                 $renderClass->MainRender($connectionClass, "List");
                 break;
+            case $uri === 'dba':
+                $renderClass->MainRenderParams($connectionClass, "Dba", $param_uri);
+                break;
             default:
                 break;
         }

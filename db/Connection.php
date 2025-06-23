@@ -68,12 +68,10 @@ class Connection
         $dotenv = Dotenv::createImmutable(dirname(__DIR__));
         $dotenv->load();
 
-        $database = $_ENV['DB_DATABASE'];
         $uid = $_ENV['DB_USERNAME'];
         $pwd = $_ENV['DB_PASSWORD'];
 
         return [
-            "Database" => $database,
             "UID" => $uid,
             "PWD" => $pwd,
             "CharacterSet" => "UTF-8",
@@ -92,5 +90,44 @@ class Connection
     public function getConnection()
     {
         return $this->conn;
+    }
+    public function renderDatabaseTables($dbName)
+    {
+        // Экранируем имя БД на случай пробелов или спецсимволов
+        $safeDbName = explode("=", $dbName)[1]; // Убираем скобки, если есть
+
+        // Переключаемся на нужную БД
+        $sqlUseDb = "USE [$safeDbName]";
+        $stmtUseDb = sqlsrv_query($this->conn, $sqlUseDb);
+
+        if ($stmtUseDb === false) {
+            die("Ошибка подключения к БД: " . print_r(sqlsrv_errors(), true));
+        }
+        sqlsrv_free_stmt($stmtUseDb);
+
+        // Запрос на получение списка таблиц
+        $sql = "
+            SELECT TABLE_NAME 
+            FROM INFORMATION_SCHEMA.TABLES 
+            WHERE TABLE_TYPE = 'BASE TABLE'
+        ";
+
+        $stmt = sqlsrv_query($this->conn, $sql);
+
+        if ($stmt === false) {
+            die("Ошибка выполнения запроса: " . print_r(sqlsrv_errors(), true));
+        }
+
+
+        echo "<h2>Список таблиц в базе данных <em>" . htmlspecialchars($safeDbName) . "</em></h2>";
+        echo "<ul>";
+
+        while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+            echo "<li>" . htmlspecialchars($row['TABLE_NAME']) . "</li>";
+        }
+
+        echo "</ul>";
+
+        sqlsrv_free_stmt($stmt);
     }
 }
