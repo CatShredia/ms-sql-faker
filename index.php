@@ -11,6 +11,7 @@ spl_autoload_register(function ($class_name) {
 require_once __DIR__ . '/vendor/autoload.php';
 
 require_once __DIR__ . "/db/Connection.php";
+require_once __DIR__ . "/route.php";
 
 use SystemDb\Connection;
 
@@ -18,6 +19,4 @@ $connectionClass = new Connection();
 
 $connectionClass->getConnection();
 
-$renderClass = new Render();
-
-$renderClass->MainRender($connectionClass);
+handleRequest($connectionClass);

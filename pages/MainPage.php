@@ -14,17 +14,7 @@
 
     <main class="main">
         <div class="main_container container">
-            <section class="show-tables">
-                <?php
-                $dbList = $connectionClass->getListDatabases();
-
-                echo "<ul>";
-                foreach ($dbList as $item) {
-                    echo "<li>" . htmlspecialchars($item) . "</li>";
-                }
-                echo "</ul>";
-                ?>
-            </section>
+            <?php include __DIR__ . "/sections/" . $section . ".php" ?>
         </div>
     </main>
 
