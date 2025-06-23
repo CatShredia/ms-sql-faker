@@ -1,0 +1,17 @@
+{
+    "name": "catshreda/ms-faker",
+    "autoload": {
+        "psr-4": {
+            "Catshreda\\MsFaker\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "CatShredia",
+            "email": "sasha990g@gmail.com"
+        }
+    ],
+    "require": {
+        "vlucas/phpdotenv": "^5.6"
+    }
+}
