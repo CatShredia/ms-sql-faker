@@ -10,17 +10,8 @@
 </head>
 
 <body>
-    <header class="header">
-        <div class="header_container container">
-            <nav class="header__nav">
-                <ul>
-                    <li><a href="#">Главная</a></li>
-                    <li><a href="#">Просмотр</a></li>
-                    <li><a href="#">Заполнение</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+    <?php include __DIR__ . "/includes/Header.php" ?>
+
     <main class="main">
         <div class="main_container container">
             <section class="show-tables">
@@ -36,7 +27,8 @@
             </section>
         </div>
     </main>
-    <footer class="footer">d</footer>
+
+    <?php include __DIR__ . "/includes/Footer.php" ?>
 </body>
 
 </html>
