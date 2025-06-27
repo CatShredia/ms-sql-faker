@@ -1,9 +1,5 @@
 <?php
 
-use system\Logger;
-use controllers\Controller;
-use controllers\PostController;
-
 function handleRequest($connectionClass)
 {
     $renderClass = new Render();
@@ -39,5 +35,16 @@ function handleRequest($connectionClass)
                 break;
         }
     } else if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        switch (true) {
+            case $uri === 'seed':
+                $data = $_POST['fill_type'] ?? [];
+                $param_uri = explode("=", $param_uri)[1];;
+
+                $filePath = __DIR__ . '/resources/format_jsons/' . $param_uri . '.json';
+
+                echo $filePath;
+                // Сохраняем в JSON
+                file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        }
     }
 }

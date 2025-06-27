@@ -235,7 +235,7 @@ class Connection
         $fillTypes = $this->fakerSeeder->getAvailableFillTypes();
 
         // Форма для отправки выбранных типов
-        echo "<form method='POST' action='/save-fill-types'>";
+
 
         while ($rowTable = sqlsrv_fetch_array($stmtTables, SQLSRV_FETCH_ASSOC)) {
             $tableName = $rowTable['TABLE_NAME'];
@@ -283,9 +283,6 @@ class Connection
             echo "</table>";
             sqlsrv_free_stmt($stmtColumns);
         }
-
-        echo "<button type='submit'>Сохранить типы заполнения</button>";
-        echo "</form>";
 
         sqlsrv_free_stmt($stmtTables);
 
