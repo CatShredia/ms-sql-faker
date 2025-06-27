@@ -21,6 +21,8 @@ function handleRequest($connectionClass)
         $uri = '/';
     }
 
+    echo $param_uri;
+
     // отдельно POST отдельно GET
     if ($_SERVER["REQUEST_METHOD"] == "GET") {
         switch (true) {
@@ -29,6 +31,9 @@ function handleRequest($connectionClass)
                 break;
             case $uri === 'dba':
                 $renderClass->MainRenderParams($connectionClass, "Dba", $param_uri);
+                break;
+            case $uri === 'seed':
+                $renderClass->MainRenderParams($connectionClass, "Seed", $param_uri);
                 break;
             default:
                 break;

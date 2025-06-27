@@ -13,6 +13,14 @@ ul {
     list-style: none;
 }
 
+.seed-button {
+    background-color: rgb(200, 200, 200);
+
+    padding: 10px 20px;
+
+    text-align: center;
+}
+
 main ul {
     list-style: square;
 
@@ -74,6 +82,13 @@ body {
 .table-show {
     display: grid;
     grid-template-columns: 1fr 1fr;
+}
+
+.list-tables {
+    display: flex;
+    flex-direction: column;
+
+    gap: 10px;
 }
 
 td,

@@ -9,6 +9,6 @@
         $connectionClass->renderDatabaseTables($params);
         ?>
 
-        <a href="/seed?<?= $params ?>" class="seed-button">Заполнение</a>
+        <a href="/seed?<?= $params ?>" class="seed-button">Заполнить</a>
     </div>
 </section>
