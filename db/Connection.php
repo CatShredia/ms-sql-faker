@@ -23,25 +23,33 @@ class Connection
         }
     }
 
-    public function getTable()
+    // Получаем данные из env
+    private function getDotenvEnv()
     {
-        $sql = "SELECT * FROM Table_1";
+        $dotenv = Dotenv::createImmutable(dirname(__DIR__));
+        $dotenv->load();
 
-        $stmt = sqlsrv_query($this->conn, $sql);
+        $uid = $_ENV['DB_USERNAME'];
+        $pwd = $_ENV['DB_PASSWORD'];
 
-        if ($stmt === false) {
-            die(print_r(sqlsrv_errors(), true));
-        }
-
-        // Пример: возвращаем данные как массив
-        $results = [];
-        while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
-            $results[] = $row;
-        }
-
-        return $results;
+        return [
+            "UID" => $uid,
+            "PWD" => $pwd,
+            "CharacterSet" => "UTF-8",
+            "ReturnDatesAsStrings" => true
+        ];
     }
 
+    // Получаем данные из env
+    private function getServerNameEnv()
+    {
+        $dotenv = Dotenv::createImmutable(dirname(__DIR__));
+        $dotenv->load();
+
+        return $_ENV['DB_SERVER'];
+    }
+
+    // Получает список всех пользовательских баз данных на сервере
     public function getListDatabases()
     {
         $sql = "
@@ -66,72 +74,64 @@ class Connection
         return $databases;
     }
 
-    private function getDotenvEnv()
-    {
-        $dotenv = Dotenv::createImmutable(dirname(__DIR__));
-        $dotenv->load();
-
-        $uid = $_ENV['DB_USERNAME'];
-        $pwd = $_ENV['DB_PASSWORD'];
-
-        return [
-            "UID" => $uid,
-            "PWD" => $pwd,
-            "CharacterSet" => "UTF-8",
-            "ReturnDatesAsStrings" => true
-        ];
-    }
-
-    private function getServerNameEnv()
-    {
-        $dotenv = Dotenv::createImmutable(dirname(__DIR__));
-        $dotenv->load();
-
-        return $_ENV['DB_SERVER'];
-    }
-
+    // Получаем подключение
     public function getConnection()
     {
         return $this->conn;
     }
-    public function renderDatabaseTables($dbName)
-    {
-        // Экранируем имя БД на случай пробелов или спецсимволов
-        $safeDbName = explode("=", $dbName)[1]; // Убираем скобки, если есть
 
-        // Переключаемся на нужную БД
+    // Получает список таблиц из указанной базы данных
+    private function getDatabaseTables(string $dbName): array
+    {
+        $safeDbName = explode("=", $dbName)[1];
+
         $sqlUseDb = "USE [$safeDbName]";
         $stmtUseDb = sqlsrv_query($this->conn, $sqlUseDb);
-
         if ($stmtUseDb === false) {
-            die("Ошибка подключения к БД: " . print_r(sqlsrv_errors(), true));
+            throw new \RuntimeException("Ошибка подключения к БД: " . print_r(sqlsrv_errors(), true));
         }
         sqlsrv_free_stmt($stmtUseDb);
 
         // Запрос на получение списка таблиц
         $sql = "
-            SELECT TABLE_NAME 
-            FROM INFORMATION_SCHEMA.TABLES 
-            WHERE TABLE_TYPE = 'BASE TABLE'
-        ";
+        SELECT TABLE_NAME 
+        FROM INFORMATION_SCHEMA.TABLES 
+        WHERE TABLE_TYPE = 'BASE TABLE'
+    ";
 
         $stmt = sqlsrv_query($this->conn, $sql);
-
         if ($stmt === false) {
-            die("Ошибка выполнения запроса: " . print_r(sqlsrv_errors(), true));
+            throw new \RuntimeException("Ошибка выполнения запроса: " . print_r(sqlsrv_errors(), true));
         }
 
-
-        echo "<h2>Список таблиц в базе данных <em>" . htmlspecialchars($safeDbName) . "</em></h2>";
-        echo "<ul>";
-
+        $tables = [];
         while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
-            echo "<li><a href=\"#" . htmlspecialchars($row['TABLE_NAME']) . "\">" . htmlspecialchars($row['TABLE_NAME']) . "</a></li>";
+            $tables[] = $row['TABLE_NAME'];
         }
-
-        echo "</ul>";
 
         sqlsrv_free_stmt($stmt);
+
+        return $tables;
+    }
+
+    // Выводит HTML-список всех таблиц в указанной базе данных.
+    public function renderDatabaseTables(string $dbName): void
+    {
+        try {
+            $tables = $this->getDatabaseTables($dbName);
+            $safeDbName = explode("=", $dbName)[1];
+
+            echo "<h2>Список таблиц в базе данных <em>" . htmlspecialchars($safeDbName) . "</em></h2>";
+            echo "<ul>";
+
+            foreach ($tables as $table) {
+                echo "<li><a href=\"#" . htmlspecialchars($table) . "\">" . htmlspecialchars($table) . "</a></li>";
+            }
+
+            echo "</ul>";
+        } catch (\Exception $e) {
+            echo "<p style='color:red;'>Произошла ошибка: " . $e->getMessage() . "</p>";
+        }
     }
 
     public function renderAllTablesData($dbName)
@@ -229,14 +229,12 @@ class Connection
 
         echo "<h2>Типы данных из всех таблиц базы <em>" . htmlspecialchars($safeDbName) . "</em></h2>";
 
-        // Получаем список таблиц
         $sqlTables = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
         $stmtTables = sqlsrv_query($this->conn, $sqlTables);
         if ($stmtTables === false) {
             die("Ошибка получения списка таблиц: " . print_r(sqlsrv_errors(), true));
         }
 
-        // Получаем доступные типы заполнения
         $fillTypes = $this->fakerSeeder->getAvailableFillTypes();
 
         // Путь к JSON-файлу
@@ -249,9 +247,16 @@ class Connection
             $savedFillTypes = json_decode($jsonContent, true) ?: [];
         }
 
+        // Форма для отправки выбранных типов
+        echo "<form method='POST' action='/save-fill-types'>";
+        echo "<input type='hidden' name='dbName' value='" . htmlspecialchars($dbName) . "'>";
+
         while ($rowTable = sqlsrv_fetch_array($stmtTables, SQLSRV_FETCH_ASSOC)) {
             $tableName = $rowTable['TABLE_NAME'];
             echo "<h3 id=\"$tableName\">$tableName</h3>";
+
+            // Получаем информацию о PK/FK
+            $keyConstraints = $this->getKeyConstraints($tableName);
 
             $sqlColumns = "
             SELECT COLUMN_NAME, DATA_TYPE 
@@ -276,6 +281,9 @@ class Connection
                 $name = htmlspecialchars($column['COLUMN_NAME']);
                 $dataType = htmlspecialchars($column['DATA_TYPE']);
 
+                // Проверяем, является ли поле PK или FK
+                $keyType = $keyConstraints[$name] ?? null;
+
                 // Получаем сохранённый тип заполнения
                 $fillType = $savedFillTypes[$tableName][$name] ?? $this->fakerSeeder->getFillType($dataType);
 
@@ -283,27 +291,38 @@ class Connection
                 $exampleSeed = $this->fakerSeeder->getDataFromFillType($fillType);
 
                 echo "<tr>
-            <td>$name</td>
-            <td>$dataType</td>
-            <td><span class='example-seed'>" . htmlspecialchars((string)$exampleSeed) . "</span></td>
-            <td>
-                <select name=\"fill_type[{$tableName}][{$name}]\" class=\"fill-type-select\">";
-                foreach ($fillTypes as $key => $label) {
-                    $selected = ($key === $fillType) ? 'selected' : '';
-                    $exampleValue = $this->fakerSeeder->getDataFromFillType($key);
-                    echo "<option value=\"$key\" data-example=\"" . htmlspecialchars($exampleValue) . "\" $selected>$label</option>";
+                    <td>$name</td>
+                    <td>$dataType</td>
+                    <td><span class='example-seed'>" . htmlspecialchars((string)$exampleSeed) . "</span></td>
+                    <td>";
+
+                if ($keyType === 'PK') {
+                    echo "<em title='Первичный ключ'>PK</em>";
+                } elseif ($keyType === 'FK') {
+                    echo "<em title='Внешний ключ'>FK</em>";
+                } else {
+                    echo "<select name=\"fill_type[{$tableName}][{$name}]\" class=\"fill-type-select\">";
+                    foreach ($fillTypes as $key => $label) {
+                        $selected = ($key === $fillType) ? 'selected' : '';
+                        $exampleValue = $this->fakerSeeder->getDataFromFillType($key);
+                        echo "<option value=\"$key\" data-example=\"" . htmlspecialchars($exampleValue) . "\" $selected>$label</option>";
+                    }
+                    echo "</select>";
                 }
-                echo "</select></td>
-          </tr>";
+
+                echo "</td></tr>";
             }
 
             echo "</table>";
             sqlsrv_free_stmt($stmtColumns);
         }
 
+        echo "<button type='submit'>Сохранить типы заполнения</button>";
+        echo "</form>";
+
         sqlsrv_free_stmt($stmtTables);
 
-        // JS для динамического обновления примера
+        // JS для обновления примера при выборе типа
         echo <<<HTML
 <script>
 document.querySelectorAll('.fill-type-select').forEach(select => {
@@ -356,5 +375,41 @@ HTML;
             $quotedTable = "[" . str_replace("]", "]]", $table) . "]";
             sqlsrv_query($this->conn, "DBCC CHECKIDENT ('$quotedTable', RESEED, 0)");
         }
+    }
+
+    public function getKeyConstraints(string $tableName): array
+    {
+        $sql = "
+        SELECT 
+            COLUMN_NAME,
+            CONSTRAINT_NAME
+        FROM 
+            INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+        WHERE 
+            TABLE_NAME = '$tableName'
+    ";
+
+        $stmt = sqlsrv_query($this->conn, $sql);
+        if ($stmt === false) {
+            return [];
+        }
+
+        $constraints = [];
+
+        while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+            $columnName = $row['COLUMN_NAME'];
+            $constraintName = $row['CONSTRAINT_NAME'];
+
+            // Определяем тип ограничения
+            if (str_contains($constraintName, 'PK')) {
+                $constraints[$columnName] = 'PK';
+            } elseif (str_contains($constraintName, 'FK')) {
+                $constraints[$columnName] = 'FK';
+            }
+        }
+
+        sqlsrv_free_stmt($stmt);
+
+        return $constraints;
     }
 }

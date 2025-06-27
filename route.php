@@ -46,10 +46,17 @@ function handleRequest($connectionClass)
                 echo $filePath;
                 // Сохраняем в JSON
                 file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-            case $uri === 'drop-db':
-                $dbName = explode("=", $param_uri)[1] ?? null;
+            case 'drop-db':
+                $dbName = $_GET['dbName'] ?? null;
 
-                $connectionClass->truncateAllTables($dbName);
+                if ($dbName) {
+                    $connectionClass->truncateAllTables($dbName);
+                    header("Location: /dba?dbName=$dbName");
+                    exit();
+                } else {
+                    echo "Не указано имя БД";
+                }
+                break;
         }
     }
 }
