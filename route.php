@@ -17,8 +17,6 @@ function handleRequest($connectionClass)
         $uri = '/';
     }
 
-    echo $param_uri;
-
     // отдельно POST отдельно GET
     if ($_SERVER["REQUEST_METHOD"] == "GET") {
         switch (true) {
@@ -30,6 +28,9 @@ function handleRequest($connectionClass)
                 break;
             case $uri === 'seed':
                 $renderClass->MainRenderParams($connectionClass, "Seed", $param_uri);
+                break;
+            case $uri === 'drop':
+                $renderClass->MainRenderParams($connectionClass, "Drop", $param_uri);
                 break;
             default:
                 break;
@@ -45,6 +46,10 @@ function handleRequest($connectionClass)
                 echo $filePath;
                 // Сохраняем в JSON
                 file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            case $uri === 'drop-db':
+                $dbName = explode("=", $param_uri)[1] ?? null;
+
+                $connectionClass->truncateAllTables($dbName);
         }
     }
 }

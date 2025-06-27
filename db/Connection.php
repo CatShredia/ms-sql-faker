@@ -315,4 +315,46 @@ document.querySelectorAll('.fill-type-select').forEach(select => {
 </script>
 HTML;
     }
+
+    public function truncateAllTables(string $dbName): void
+    {
+        // Переключаемся на нужную БД
+        $useDbSql = "USE [$dbName]";
+        $stmtUseDb = sqlsrv_query($this->conn, $useDbSql);
+        if ($stmtUseDb === false) {
+            throw new \Exception("Ошибка переключения на БД: " . print_r(sqlsrv_errors(), true));
+        }
+        sqlsrv_free_stmt($stmtUseDb);
+
+        // Получаем список таблиц
+        $tables = [];
+        $sqlTables = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
+        $stmt = sqlsrv_query($this->conn, $sqlTables);
+        if ($stmt === false) {
+            throw new \Exception("Ошибка получения списка таблиц: " . print_r(sqlsrv_errors(), true));
+        }
+
+        while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+            $tables[] = $row['TABLE_NAME'];
+        }
+        sqlsrv_free_stmt($stmt);
+
+        // Отключаем проверку внешних ключей
+        sqlsrv_query($this->conn, "EXEC sp_MSforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT ALL'");
+
+        // Очищаем таблицы по одной
+        foreach ($tables as $table) {
+            $quotedTable = "[" . str_replace("]", "]]", $table) . "]";
+            sqlsrv_query($this->conn, "DELETE FROM $quotedTable"); // TRUNCATE требует отключения FK
+        }
+
+        // Включаем обратно внешние ключи
+        sqlsrv_query($this->conn, "EXEC sp_MSforeachtable 'ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL'");
+
+        // Сброс автоинкремента
+        foreach ($tables as $table) {
+            $quotedTable = "[" . str_replace("]", "]]", $table) . "]";
+            sqlsrv_query($this->conn, "DBCC CHECKIDENT ('$quotedTable', RESEED, 0)");
+        }
+    }
 }
