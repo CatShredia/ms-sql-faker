@@ -1,7 +1,7 @@
 <section class="table-show">
     <div class="tables">
         <?php
-        $connectionClass->renderAllTablesData($params);
+        $connectionClass->renderAllDataTypes($params);
         ?>
     </div>
     <div class="list-tables">

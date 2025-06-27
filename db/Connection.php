@@ -2,14 +2,17 @@
 
 namespace SystemDb;
 
+use Db\FakerSeeder;
 use Dotenv\Dotenv;
 
 class Connection
 {
     private $conn;
+    private $fakerSeeder;
 
-    public function __construct()
+    public function __construct($fakerSeeder)
     {
+        $this->fakerSeeder = $fakerSeeder;
         $connectionArray = $this->getDotenvEnv();
         $serverName = $this->getServerNameEnv();
 
@@ -206,6 +209,104 @@ class Connection
             echo "<hr>";
 
             sqlsrv_free_stmt($stmtData);
+        }
+
+        sqlsrv_free_stmt($stmtTables);
+    }
+
+    public function renderAllDataTypes($dbName)
+    {
+        // Экранируем имя БД
+        $safeDbName = explode("=", $dbName)[1];
+
+        // Переключаемся на нужную БД
+        $sqlUseDb = "USE $safeDbName";
+        $stmtUseDb = sqlsrv_query($this->conn, $sqlUseDb);
+
+        if ($stmtUseDb === false) {
+            die("Ошибка подключения к БД: " . print_r(sqlsrv_errors(), true));
+        }
+        sqlsrv_free_stmt($stmtUseDb);
+
+        // Запрос на получение списка таблиц
+        $sqlTables = "
+        SELECT TABLE_NAME 
+        FROM INFORMATION_SCHEMA.TABLES 
+        WHERE TABLE_TYPE = 'BASE TABLE'
+    ";
+
+        $stmtTables = sqlsrv_query($this->conn, $sqlTables);
+
+        if ($stmtTables === false) {
+            die("Ошибка получения списка таблиц: " . print_r(sqlsrv_errors(), true));
+        }
+
+        echo "<h2>Типы данных из всех таблиц базы <em>" . htmlspecialchars($dbName) . "</em></h2>";
+
+        // Проходим по всем таблицам
+        while ($rowTable = sqlsrv_fetch_array($stmtTables, SQLSRV_FETCH_ASSOC)) {
+            $tableName = $rowTable['TABLE_NAME'];
+            $safeTableName = "[" . str_replace("]", "]]", $tableName) . "]";
+
+            echo "<h3 id=\"$tableName\">$tableName</h3>";
+
+            // Запрос структуры таблицы через INFORMATION_SCHEMA.COLUMNS
+            $sqlColumns = "
+            SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_NAME = '$tableName'
+        ";
+
+            $stmtColumns = sqlsrv_query($this->conn, $sqlColumns);
+
+            if ($stmtColumns === false) {
+                echo "<p style='color:red;'>Ошибка получения структуры таблицы $tableName</p>";
+                continue;
+            }
+
+            // Выводим типы данных в виде таблицы
+            echo "<table border='1' cellpadding='5' cellspacing='0' style='margin-bottom: 20px; border-collapse: collapse;'>";
+
+            // Заголовки
+            echo "<tr style='background-color: #f2f2f2;'>
+                <th>Поле</th>
+                <th>Тип данных</th>
+                <th>Размер / Точность</th>
+                <th>Пример Заполнения</th>
+              </tr>";
+
+            // Получаем информацию о полях
+            while ($column = sqlsrv_fetch_array($stmtColumns, SQLSRV_FETCH_ASSOC)) {
+                $name = htmlspecialchars($column['COLUMN_NAME']);
+                $dataType = htmlspecialchars($column['DATA_TYPE']);
+                $size = isset($column['CHARACTER_MAXIMUM_LENGTH']) ? htmlspecialchars((string)$column['CHARACTER_MAXIMUM_LENGTH']) : '';
+                $precision = isset($column['NUMERIC_PRECISION']) ? htmlspecialchars((string)$column['NUMERIC_PRECISION']) : '';
+                $scale = isset($column['NUMERIC_SCALE']) ? htmlspecialchars((string)$column['NUMERIC_SCALE']) : '';
+
+                // Форматируем Размер / Точность
+                $sizePrecision = '';
+                if ($size !== '') {
+                    $sizePrecision .= "Размер: $size";
+                }
+                if ($precision !== '' && $scale !== '') {
+                    $sizePrecision .= ($sizePrecision ? ", " : "") . "Точность: $precision, Масштаб: $scale";
+                }
+
+                $exampleSeed = $this->fakerSeeder->GetData($dataType);
+
+                echo "<tr>
+                    <td>$name</td>
+                    <td>$dataType</td>
+                    <td>$sizePrecision</td>
+                    <td>$exampleSeed</td>
+                  </tr>";
+            }
+
+            echo "</table>";
+
+            echo "<hr>";
+
+            sqlsrv_free_stmt($stmtColumns);
         }
 
         sqlsrv_free_stmt($stmtTables);
