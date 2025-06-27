@@ -1,63 +1,83 @@
 {
     "Subject_RU": {
+        "_record_count": "10",
         "Name": "faker_name"
     },
     "Settlement": {
+        "_record_count": "10",
         "Name": "faker_name"
     },
     "Street": {
-        "Name": "faker_name"
+        "_record_count": "10",
+        "Name": "faker_date"
     },
     "Address": {
+        "_record_count": "10",
         "House_number": "faker_name",
-        "Apartment_number": "random_int"
+        "Apartment_number": "faker_boolean"
     },
     "MedicalBook": {
-        "IssueDate": "faker_date",
-        "ExpiryDate": "faker_date",
+        "_record_count": "10",
+        "IssueDate": "faker_name",
+        "ExpiryDate": "faker_name",
         "InstitutionName": "faker_name",
-        "IsAllowed": "faker_boolean"
+        "IsAllowed": "faker_double"
     },
     "Partner": {
+        "_record_count": "10",
         "FirstName": "faker_name",
-        "SecondName": "faker_name",
-        "MiddleName": "faker_name",
-        "INN": "faker_name"
+        "SecondName": "faker_double",
+        "MiddleName": "faker_date",
+        "INN": "faker_time"
     },
     "RatingPartner": {
-        "Rating": "faker_double",
-        "ChangeDateTime": "faker_datetime"
+        "_record_count": "10",
+        "Rating": "faker_name",
+        "ChangeDateTime": "faker_name"
     },
     "TypeOfPartner": {
-        "Name": "faker_name",
-        "PayoutCoefficient": "faker_double"
+        "_record_count": "10",
+        "Name": "faker_time",
+        "PayoutCoefficient": "faker_time"
+    },
+    "Courier": {
+        "_record_count": "10"
+    },
+    "Importer": {
+        "_record_count": "10"
     },
     "ChangeCourier": {
-        "ExecutionDate": "faker_date",
-        "StartTime": "faker_time",
-        "EndTime": "faker_time",
+        "_record_count": "10",
+        "ExecutionDate": "faker_name",
+        "StartTime": "faker_name",
+        "EndTime": "faker_double",
         "Status": "faker_name"
     },
     "Shop": {
-        "Name": "faker_name"
+        "_record_count": "10",
+        "Name": "faker_datetime"
     },
     "ChangeImporter": {
-        "ExecutionDate": "faker_date",
-        "StartTime": "faker_time",
-        "EndTime": "faker_time",
-        "Status": "faker_name"
+        "_record_count": "10",
+        "ExecutionDate": "faker_double",
+        "StartTime": "faker_name",
+        "EndTime": "faker_double",
+        "Status": "faker_double"
     },
     "Client": {
+        "_record_count": "10",
         "Login": "faker_name",
         "Email": "faker_name",
         "Phone": "faker_name"
     },
     "Product": {
+        "_record_count": "10",
         "Name": "faker_name",
         "Cost": "faker_double",
         "Unit": "faker_name"
     },
     "Order": {
+        "_record_count": "10",
         "StartTime": "faker_datetime",
         "EndTime": "faker_datetime",
         "Distance": "faker_double",
@@ -65,6 +85,7 @@
         "Status": "faker_name"
     },
     "Assembling": {
+        "_record_count": "10",
         "Weight": "faker_double",
         "Count": "faker_double"
     }

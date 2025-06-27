@@ -240,11 +240,11 @@ class Connection
         // Путь к JSON-файлу
         $filePath = dirname(__DIR__) . "/resources/format_jsons/" . $safeDbName . ".json";
 
-        // Загружаем сохранённые типы заполнения (если есть)
-        $savedFillTypes = [];
+        // Загружаем сохранённые типы заполнения и количество записей (если есть)
+        $savedConfig = [];
         if (file_exists($filePath)) {
             $jsonContent = file_get_contents($filePath);
-            $savedFillTypes = json_decode($jsonContent, true) ?: [];
+            $savedConfig = json_decode($jsonContent, true) ?: [];
         }
 
         // Форма для отправки выбранных типов
@@ -269,6 +269,12 @@ class Connection
                 continue;
             }
 
+            // Поле для ввода количества записей
+            $count = isset($savedConfig[$tableName]['_record_count']) ? (int)$savedConfig[$tableName]['_record_count'] : 10;
+            echo "<label>Количество записей: 
+                <input type='number' name='fill_type[{$tableName}][_record_count]' value='$count' min='1' style='width: 60px;' />
+              </label><br><br>";
+
             echo "<table border='1' cellpadding='5' cellspacing='0' style='margin-bottom: 20px; border-collapse: collapse;'>";
             echo "<tr style='background-color: #f2f2f2;'>
                 <th>Поле</th>
@@ -285,7 +291,7 @@ class Connection
                 $keyType = $keyConstraints[$name] ?? null;
 
                 // Получаем сохранённый тип заполнения
-                $fillType = $savedFillTypes[$tableName][$name] ?? $this->fakerSeeder->getFillType($dataType);
+                $fillType = $savedConfig[$tableName][$name] ?? $this->fakerSeeder->getFillType($dataType);
 
                 // Генерируем пример на основе сохранённого типа
                 $exampleSeed = $this->fakerSeeder->getDataFromFillType($fillType);
