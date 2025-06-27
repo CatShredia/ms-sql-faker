@@ -123,7 +123,7 @@ class Connection
         echo "<ul>";
 
         while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
-            echo "<li>" . htmlspecialchars($row['TABLE_NAME']) . "</li>";
+            echo "<li><a href=\"#" . htmlspecialchars($row['TABLE_NAME']) . "\">" . htmlspecialchars($row['TABLE_NAME']) . "</a></li>";
         }
 
         echo "</ul>";
@@ -165,7 +165,7 @@ class Connection
             $tableName = $rowTable['TABLE_NAME'];
             $safeTableName = "[" . str_replace("]", "]]", $tableName) . "]";
 
-            echo "<h3>Таблица: $tableName</h3>";
+            echo "<h3 id=\"$tableName\">$tableName</h3>";
 
             // Выбираем данные из таблицы
             $sqlData = "SELECT TOP 5 * FROM $safeTableName";
@@ -202,6 +202,8 @@ class Connection
             }
 
             echo "</table>";
+
+            echo "<hr>";
 
             sqlsrv_free_stmt($stmtData);
         }
