@@ -222,7 +222,6 @@ class Connection
         // Переключаемся на нужную БД
         $sqlUseDb = "USE $safeDbName";
         $stmtUseDb = sqlsrv_query($this->conn, $sqlUseDb);
-
         if ($stmtUseDb === false) {
             die("Ошибка подключения к БД: " . print_r(sqlsrv_errors(), true));
         }
@@ -234,9 +233,7 @@ class Connection
         FROM INFORMATION_SCHEMA.TABLES 
         WHERE TABLE_TYPE = 'BASE TABLE'
     ";
-
         $stmtTables = sqlsrv_query($this->conn, $sqlTables);
-
         if ($stmtTables === false) {
             die("Ошибка получения списка таблиц: " . print_r(sqlsrv_errors(), true));
         }
@@ -256,9 +253,7 @@ class Connection
             FROM INFORMATION_SCHEMA.COLUMNS
             WHERE TABLE_NAME = '$tableName'
         ";
-
             $stmtColumns = sqlsrv_query($this->conn, $sqlColumns);
-
             if ($stmtColumns === false) {
                 echo "<p style='color:red;'>Ошибка получения структуры таблицы $tableName</p>";
                 continue;
@@ -266,16 +261,14 @@ class Connection
 
             // Выводим типы данных в виде таблицы
             echo "<table border='1' cellpadding='5' cellspacing='0' style='margin-bottom: 20px; border-collapse: collapse;'>";
-
-            // Заголовки
             echo "<tr style='background-color: #f2f2f2;'>
                 <th>Поле</th>
                 <th>Тип данных</th>
                 <th>Размер / Точность</th>
                 <th>Пример Заполнения</th>
+                <th>Тип заполнения</th>
               </tr>";
 
-            // Получаем информацию о полях
             while ($column = sqlsrv_fetch_array($stmtColumns, SQLSRV_FETCH_ASSOC)) {
                 $name = htmlspecialchars($column['COLUMN_NAME']);
                 $dataType = htmlspecialchars($column['DATA_TYPE']);
@@ -293,19 +286,19 @@ class Connection
                 }
 
                 $exampleSeed = $this->fakerSeeder->GetData($dataType);
+                $fillType = $this->fakerSeeder->getFillType($dataType);
 
                 echo "<tr>
                     <td>$name</td>
                     <td>$dataType</td>
                     <td>$sizePrecision</td>
-                    <td>$exampleSeed</td>
+                    <td>" . htmlspecialchars((string)$exampleSeed) . "</td>
+                    <td>$fillType</td>
                   </tr>";
             }
 
             echo "</table>";
-
             echo "<hr>";
-
             sqlsrv_free_stmt($stmtColumns);
         }
 

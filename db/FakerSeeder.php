@@ -60,28 +60,55 @@ class FakerSeeder
     {
         $dataType = strtolower($dataType);
 
-        if ($dataType == "int") {
-            return $this->GetInt(0, 100);
-        }
-        if ($dataType == "varchar") {
-            return $this->GetName();
-        }
-        if ($dataType == "decimal") {
-            return $this->GetDouble(0, 100, 2);
-        }
-        if ($dataType == "datetime") {
-            return $this->GetDateTime();
-        }
-        if ($dataType == "date") {
-            return $this->GetDate();
-        }
-        if ($dataType == "time") {
-            return $this->GetTime();
-        }
-        if ($dataType == "bit") {
-            return $this->GetBoolean();
+        $typeMap = [
+            'int' => fn() => $this->GetInt(0, 100),
+            'varchar' => fn() => $this->GetName(),
+            'nvarchar' => fn() => $this->GetName(),
+            'decimal' => fn() => $this->GetDouble(0, 100, 2),
+            'numeric' => fn() => $this->GetDouble(0, 100, 2),
+            'datetime' => fn() => $this->GetDateTime(),
+            'date' => fn() => $this->GetDate(),
+            'time' => fn() => $this->GetTime(),
+            'bit' => fn() => $this->GetBoolean(),
+            'tinyint' => fn() => $this->GetBoolean(),
+            'char' => fn() => substr($this->GetName(), 0, 1),
+            'nchar' => fn() => substr($this->GetName(), 0, 1),
+            'text' => fn() => $this->faker->sentence(),
+            'uniqueidentifier' => fn() => $this->faker->uuid(),
+            'float' => fn() => $this->GetDouble(0, 100, 2),
+            'money' => fn() => $this->GetDouble(0, 1000, 2),
+        ];
+
+        if (isset($typeMap[$dataType])) {
+            return $typeMap[$dataType]();
         }
 
-        return "unkown_seed_type";
+        return "unknown_type: $dataType";
+    }
+
+    public function getFillType($dataType)
+    {
+        $dataType = strtolower($dataType);
+
+        $fillTypeMap = [
+            'int' => 'random_int',
+            'varchar' => 'faker_name',
+            'nvarchar' => 'faker_name',
+            'decimal' => 'random_double',
+            'numeric' => 'random_double',
+            'datetime' => 'faker_datetime',
+            'date' => 'faker_date',
+            'time' => 'faker_time',
+            'bit' => 'faker_boolean',
+            'tinyint' => 'faker_boolean',
+            'char' => 'faker_char',
+            'nchar' => 'faker_char',
+            'text' => 'faker_sentence',
+            'uniqueidentifier' => 'faker_uuid',
+            'float' => 'random_double',
+            'money' => 'random_double',
+        ];
+
+        return $fillTypeMap[$dataType] ?? 'custom';
     }
 }
