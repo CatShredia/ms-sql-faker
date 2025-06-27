@@ -94,8 +94,8 @@ class FakerSeeder
             'int' => 'random_int',
             'varchar' => 'faker_name',
             'nvarchar' => 'faker_name',
-            'decimal' => 'random_double',
-            'numeric' => 'random_double',
+            'decimal' => 'faker_double',
+            'numeric' => 'faker_double',
             'datetime' => 'faker_datetime',
             'date' => 'faker_date',
             'time' => 'faker_time',
@@ -105,10 +105,55 @@ class FakerSeeder
             'nchar' => 'faker_char',
             'text' => 'faker_sentence',
             'uniqueidentifier' => 'faker_uuid',
-            'float' => 'random_double',
-            'money' => 'random_double',
+            'float' => 'faker_double',
+            'money' => 'faker_double',
         ];
 
         return $fillTypeMap[$dataType] ?? 'custom';
+    }
+
+    public function getAvailableFillTypes()
+    {
+        return [
+            'random_int' => 'Случайное число',
+            'faker_name' => 'Фейковое имя',
+            'faker_double' => 'Дробное число',
+            'faker_datetime' => 'Дата и время',
+            'faker_date' => 'Дата',
+            'faker_time' => 'Время',
+            'faker_boolean' => 'Булево значение',
+            'faker_char' => 'Одна буква',
+            'faker_sentence' => 'Предложение',
+            'faker_uuid' => 'UUID',
+            'custom' => 'Свой вариант'
+        ];
+    }
+
+    public function getDataFromFillType(string $fillType)
+    {
+        switch ($fillType) {
+            case 'random_int':
+                return $this->GetInt(0, 100);
+            case 'faker_name':
+                return $this->GetName();
+            case 'faker_double':
+                return $this->GetDouble(0, 100, 2);
+            case 'faker_datetime':
+                return $this->GetDateTime();
+            case 'faker_date':
+                return $this->GetDate();
+            case 'faker_time':
+                return $this->GetTime();
+            case 'faker_boolean':
+                return $this->GetBoolean() ? 'true' : 'false';
+            case 'faker_char':
+                return substr($this->GetName(), 0, 1);
+            case 'faker_sentence':
+                return $this->faker->sentence();
+            case 'faker_uuid':
+                return $this->faker->uuid();
+            default:
+                return 'custom';
+        }
     }
 }
