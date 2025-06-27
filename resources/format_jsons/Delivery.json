@@ -1,49 +1,49 @@
 {
     "Subject_RU": {
-        "ID": "random_int",
-        "Name": "faker_name"
+        "ID": "faker_double",
+        "Name": "custom"
     },
     "Settlement": {
-        "ID": "random_int",
-        "Name": "faker_name",
+        "ID": "custom",
+        "Name": "custom",
         "Subject_RU_ID": "random_int"
     },
     "Street": {
-        "ID": "random_int",
-        "Name": "faker_name",
+        "ID": "faker_name",
+        "Name": "random_int",
         "Settlement_ID": "random_int"
     },
     "Address": {
         "ID": "random_int",
-        "Street_ID": "random_int",
-        "House_number": "faker_name",
-        "Apartment_number": "random_int"
+        "Street_ID": "faker_name",
+        "House_number": "random_int",
+        "Apartment_number": "faker_name"
     },
     "MedicalBook": {
-        "Number": "faker_name",
+        "Number": "faker_date",
         "IssueDate": "faker_date",
-        "ExpiryDate": "faker_date",
-        "InstitutionName": "faker_name",
-        "IsAllowed": "faker_boolean"
+        "ExpiryDate": "faker_name",
+        "InstitutionName": "faker_boolean",
+        "IsAllowed": "random_int"
     },
     "Partner": {
-        "ID": "random_int",
+        "ID": "faker_name",
         "FirstName": "faker_name",
         "SecondName": "faker_name",
         "MiddleName": "faker_name",
-        "INN": "faker_name",
-        "AddressID": "random_int",
-        "MedicalBookNumber": "faker_name"
+        "INN": "random_int",
+        "AddressID": "faker_name",
+        "MedicalBookNumber": "random_int"
     },
     "RatingPartner": {
-        "PartnerID": "random_int",
-        "Rating": "faker_double",
-        "ChangeDateTime": "faker_datetime"
+        "PartnerID": "faker_double",
+        "Rating": "faker_datetime",
+        "ChangeDateTime": "random_int"
     },
     "TypeOfPartner": {
-        "ID": "random_int",
-        "Name": "faker_name",
-        "PayoutCoefficient": "faker_double"
+        "ID": "faker_name",
+        "Name": "faker_double",
+        "PayoutCoefficient": "random_int"
     },
     "Courier": {
         "ID": "random_int",
@@ -55,47 +55,47 @@
         "PartnerID": "random_int"
     },
     "ChangeCourier": {
-        "ID": "random_int",
-        "ExecutionDate": "faker_date",
+        "ID": "faker_date",
+        "ExecutionDate": "faker_time",
         "StartTime": "faker_time",
-        "EndTime": "faker_time",
-        "Status": "faker_name",
+        "EndTime": "faker_name",
+        "Status": "random_int",
         "CourierID": "random_int"
     },
     "Shop": {
-        "ID": "random_int",
-        "Name": "faker_name",
+        "ID": "faker_name",
+        "Name": "random_int",
         "AddressID": "random_int"
     },
     "ChangeImporter": {
-        "ID": "random_int",
-        "ExecutionDate": "faker_date",
+        "ID": "faker_date",
+        "ExecutionDate": "faker_time",
         "StartTime": "faker_time",
-        "EndTime": "faker_time",
-        "Status": "faker_name",
+        "EndTime": "faker_name",
+        "Status": "random_int",
         "ImporterID": "random_int",
         "ShopID": "random_int"
     },
     "Client": {
-        "ID": "random_int",
+        "ID": "faker_name",
         "Login": "faker_name",
         "Email": "faker_name",
-        "Phone": "faker_name",
+        "Phone": "random_int",
         "AddressID": "random_int"
     },
     "Product": {
-        "ID": "random_int",
-        "Name": "faker_name",
-        "Cost": "faker_double",
-        "Unit": "faker_name"
+        "ID": "faker_name",
+        "Name": "faker_double",
+        "Cost": "faker_name",
+        "Unit": "random_int"
     },
     "Order": {
-        "ID": "random_int",
+        "ID": "faker_datetime",
         "StartTime": "faker_datetime",
-        "EndTime": "faker_datetime",
+        "EndTime": "faker_double",
         "Distance": "faker_double",
-        "PaymentAmount": "faker_double",
-        "Status": "faker_name",
+        "PaymentAmount": "faker_name",
+        "Status": "random_int",
         "ChangeCourierID": "random_int",
         "ChangeImporterID": "random_int",
         "ShopID": "random_int",
@@ -104,15 +104,15 @@
     "Assembling": {
         "ID": "random_int",
         "ProductID": "random_int",
-        "OrderID": "random_int",
+        "OrderID": "faker_double",
         "Weight": "faker_double",
-        "Count": "faker_double"
+        "Count": "faker_name"
     },
     "sysdiagrams": {
-        "name": "faker_name",
+        "name": "random_int",
         "principal_id": "random_int",
         "diagram_id": "random_int",
-        "version": "random_int",
+        "version": "custom",
         "definition": "custom"
     }
 }

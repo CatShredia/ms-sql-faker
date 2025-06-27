@@ -216,7 +216,10 @@ class Connection
 
     public function renderAllDataTypes($dbName)
     {
+        // Экранируем имя БД
         $safeDbName = explode("=", $dbName)[1];
+
+        // Переключаемся на нужную БД
         $sqlUseDb = "USE [$safeDbName]";
         $stmtUseDb = sqlsrv_query($this->conn, $sqlUseDb);
         if ($stmtUseDb === false) {
@@ -226,16 +229,25 @@ class Connection
 
         echo "<h2>Типы данных из всех таблиц базы <em>" . htmlspecialchars($safeDbName) . "</em></h2>";
 
+        // Получаем список таблиц
         $sqlTables = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
         $stmtTables = sqlsrv_query($this->conn, $sqlTables);
         if ($stmtTables === false) {
             die("Ошибка получения списка таблиц: " . print_r(sqlsrv_errors(), true));
         }
 
+        // Получаем доступные типы заполнения
         $fillTypes = $this->fakerSeeder->getAvailableFillTypes();
 
-        // Форма для отправки выбранных типов
+        // Путь к JSON-файлу
+        $filePath = dirname(__DIR__) . "/resources/format_jsons/" . $safeDbName . ".json";
 
+        // Загружаем сохранённые типы заполнения (если есть)
+        $savedFillTypes = [];
+        if (file_exists($filePath)) {
+            $jsonContent = file_get_contents($filePath);
+            $savedFillTypes = json_decode($jsonContent, true) ?: [];
+        }
 
         while ($rowTable = sqlsrv_fetch_array($stmtTables, SQLSRV_FETCH_ASSOC)) {
             $tableName = $rowTable['TABLE_NAME'];
@@ -263,21 +275,26 @@ class Connection
             while ($column = sqlsrv_fetch_array($stmtColumns, SQLSRV_FETCH_ASSOC)) {
                 $name = htmlspecialchars($column['COLUMN_NAME']);
                 $dataType = htmlspecialchars($column['DATA_TYPE']);
-                $fillType = $this->fakerSeeder->getFillType($dataType);
-                $exampleSeed = $this->fakerSeeder->GetData($dataType);
+
+                // Получаем сохранённый тип заполнения
+                $fillType = $savedFillTypes[$tableName][$name] ?? $this->fakerSeeder->getFillType($dataType);
+
+                // Генерируем пример на основе сохранённого типа
+                $exampleSeed = $this->fakerSeeder->getDataFromFillType($fillType);
 
                 echo "<tr>
-                    <td>$name</td>
-                    <td>$dataType</td>
-                    <td><span class='example-seed'>" . htmlspecialchars((string)$exampleSeed) . "</span></td>
-                    <td>
-                        <select name=\"fill_type[{$tableName}][{$name}]\" class=\"fill-type-select\">";
+            <td>$name</td>
+            <td>$dataType</td>
+            <td><span class='example-seed'>" . htmlspecialchars((string)$exampleSeed) . "</span></td>
+            <td>
+                <select name=\"fill_type[{$tableName}][{$name}]\" class=\"fill-type-select\">";
                 foreach ($fillTypes as $key => $label) {
                     $selected = ($key === $fillType) ? 'selected' : '';
-                    echo "<option value=\"$key\" data-example=\"" . htmlspecialchars($this->fakerSeeder->getDataFromFillType($key)) . "\" $selected>$label</option>";
+                    $exampleValue = $this->fakerSeeder->getDataFromFillType($key);
+                    echo "<option value=\"$key\" data-example=\"" . htmlspecialchars($exampleValue) . "\" $selected>$label</option>";
                 }
                 echo "</select></td>
-                  </tr>";
+          </tr>";
             }
 
             echo "</table>";
@@ -286,7 +303,7 @@ class Connection
 
         sqlsrv_free_stmt($stmtTables);
 
-        // JS для обновления примера
+        // JS для динамического обновления примера
         echo <<<HTML
 <script>
 document.querySelectorAll('.fill-type-select').forEach(select => {
