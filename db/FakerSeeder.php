@@ -6,7 +6,6 @@ use Faker\Factory;
 
 class FakerSeeder
 {
-
     private $faker;
 
     public function __construct()

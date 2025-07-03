@@ -13,6 +13,4 @@ use Db\FakerSeeder;
 $fakerSeeder = new FakerSeeder();
 $connectionClass = new Connection($fakerSeeder);
 
-$connectionClass->getConnection();
-
 handleRequest($connectionClass);
