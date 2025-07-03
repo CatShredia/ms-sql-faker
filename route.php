@@ -46,6 +46,10 @@ function handleRequest($connectionClass)
                 echo $filePath;
                 // Сохраняем в JSON
                 file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+                break;
+            case 'seeding':
+                $connectionClass->SeedDB($param_uri);
+                break;
             case 'drop-db':
                 $dbName = $_GET['dbName'] ?? null;
 

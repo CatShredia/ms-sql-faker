@@ -418,4 +418,11 @@ HTML;
 
         return $constraints;
     }
+
+    public static function SeedDB($dbName)
+    {
+        $safeDbName = explode("=", $dbName)[1];
+        print_r($_POST);
+        echo $safeDbName;
+    }
 }
