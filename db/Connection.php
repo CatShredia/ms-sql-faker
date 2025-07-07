@@ -464,6 +464,8 @@ HTML;
 
         // Проходим по каждой таблице из $data
         foreach ($data as $tableName => $tableStructure) {
+            $startTime = microtime(true); // Засекаем время
+
             $count = $tableStructure['_record_count'] ?? 10;
             unset($tableStructure['_record_count']); // убираем служебное поле
 
@@ -480,9 +482,17 @@ HTML;
             $columnsWithBrackets = array_map(fn($col) => "[$col]", $columns);
             $placeholders = implode(', ', array_fill(0, count($columns), '?'));
 
-            $sql = "USE [$dbName] INSERT INTO dbo.[$tableName] (" . implode(', ', $columnsWithBrackets) . ") VALUES ($placeholders)";
+            $sql = "INSERT INTO [$dbName].dbo.[$tableName] (" . implode(', ', $columnsWithBrackets) . ") VALUES ($placeholders)";
 
-            echo "<h3>Вставка в таблицу: $tableName</h3>";
+            echo "<h3>Вставка в таблицу: <strong>$tableName</strong></h3>";
+            echo "<p><strong>Количество записей:</strong> $count</p>";
+            echo "<ul>";
+            foreach ($tableStructure as $column => $type) {
+                echo "<li><strong>$column</strong> — тип: $type</li>";
+            }
+            echo "</ul>";
+
+            echo "<p><strong>SQL-запрос:</strong><br><code>" . htmlspecialchars($sql) . "</code></p>";
 
             // Генерируем данные и вставляем в БД
             for ($i = 0; $i < $count; $i++) {
@@ -499,14 +509,26 @@ HTML;
                     }
                 }
 
+                // Для отладки выводим параметры
+                echo "<p><strong>Параметры:</strong> ";
+                print_r($params);
+                echo "</p>";
+
                 // Выполняем запрос
                 $stmt = sqlsrv_query($this->conn, $sql, $params);
 
                 if ($stmt === false) {
-                    echo "Ошибка при вставке в таблицу [$tableName]:<br>";
-                    die(print_r(sqlsrv_errors(), true));
+                    echo "<p style='color:red;'><strong>Ошибка при вставке в таблицу [$tableName]</strong></p>";
+                    echo "<pre>";
+                    print_r(sqlsrv_errors());
+                    echo "</pre>";
+                    die("Прервано на итерации $i");
                 }
             }
+
+            $executionTime = round(microtime(true) - $startTime, 4);
+            echo "<p style='color:green;'>✅ Таблица <strong>$tableName</strong> успешно заполнена за $executionTime сек.</p>";
+            echo "<hr>";
         }
     }
 }
