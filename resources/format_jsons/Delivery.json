@@ -1,91 +1,127 @@
 {
     "Subject_RU": {
         "_record_count": "10",
+        "ID": "PK",
         "Name": "faker_name"
     },
     "Settlement": {
         "_record_count": "10",
-        "Name": "faker_name"
+        "ID": "PK",
+        "Name": "faker_name",
+        "Subject_RU_ID": "FK"
     },
     "Street": {
         "_record_count": "10",
-        "Name": "faker_date"
+        "ID": "PK",
+        "Name": "faker_time",
+        "Settlement_ID": "FK"
     },
     "Address": {
         "_record_count": "10",
+        "ID": "PK",
+        "Street_ID": "FK",
         "House_number": "faker_name",
-        "Apartment_number": "faker_boolean"
+        "Apartment_number": "faker_double"
     },
     "MedicalBook": {
         "_record_count": "10",
+        "Number": "PK",
         "IssueDate": "faker_name",
-        "ExpiryDate": "faker_name",
-        "InstitutionName": "faker_name",
-        "IsAllowed": "faker_double"
+        "ExpiryDate": "faker_double",
+        "InstitutionName": "faker_double",
+        "IsAllowed": "faker_name"
     },
     "Partner": {
         "_record_count": "10",
-        "FirstName": "faker_name",
-        "SecondName": "faker_double",
-        "MiddleName": "faker_date",
-        "INN": "faker_time"
+        "ID": "PK",
+        "FirstName": "faker_double",
+        "SecondName": "faker_name",
+        "MiddleName": "faker_datetime",
+        "INN": "faker_datetime",
+        "AddressID": "FK",
+        "MedicalBookNumber": "FK"
     },
     "RatingPartner": {
         "_record_count": "10",
+        "PartnerID": "PK",
         "Rating": "faker_name",
         "ChangeDateTime": "faker_name"
     },
     "TypeOfPartner": {
         "_record_count": "10",
-        "Name": "faker_time",
-        "PayoutCoefficient": "faker_time"
+        "ID": "PK",
+        "Name": "faker_name",
+        "PayoutCoefficient": "faker_datetime"
     },
     "Courier": {
-        "_record_count": "10"
+        "_record_count": "10",
+        "ID": "PK",
+        "TypeOfPartnerID": "FK",
+        "PartnerID": "FK"
     },
     "Importer": {
-        "_record_count": "10"
+        "_record_count": "10",
+        "ID": "PK",
+        "PartnerID": "FK"
     },
     "ChangeCourier": {
         "_record_count": "10",
+        "ID": "PK",
         "ExecutionDate": "faker_name",
         "StartTime": "faker_name",
         "EndTime": "faker_double",
-        "Status": "faker_name"
+        "Status": "faker_name",
+        "CourierID": "FK"
     },
     "Shop": {
         "_record_count": "10",
-        "Name": "faker_datetime"
+        "ID": "PK",
+        "Name": "faker_double",
+        "AddressID": "FK"
     },
     "ChangeImporter": {
         "_record_count": "10",
+        "ID": "PK",
         "ExecutionDate": "faker_double",
-        "StartTime": "faker_name",
+        "StartTime": "faker_double",
         "EndTime": "faker_double",
-        "Status": "faker_double"
+        "Status": "faker_double",
+        "ImporterID": "FK",
+        "ShopID": "FK"
     },
     "Client": {
         "_record_count": "10",
+        "ID": "PK",
         "Login": "faker_name",
         "Email": "faker_name",
-        "Phone": "faker_name"
+        "Phone": "faker_name",
+        "AddressID": "FK"
     },
     "Product": {
         "_record_count": "10",
+        "ID": "PK",
         "Name": "faker_name",
         "Cost": "faker_double",
         "Unit": "faker_name"
     },
     "Order": {
         "_record_count": "10",
+        "ID": "PK",
         "StartTime": "faker_datetime",
         "EndTime": "faker_datetime",
         "Distance": "faker_double",
         "PaymentAmount": "faker_double",
-        "Status": "faker_name"
+        "Status": "faker_name",
+        "ChangeCourierID": "FK",
+        "ChangeImporterID": "FK",
+        "ShopID": "FK",
+        "ClientID": "FK"
     },
     "Assembling": {
         "_record_count": "10",
+        "ID": "PK",
+        "ProductID": "FK",
+        "OrderID": "FK",
         "Weight": "faker_double",
         "Count": "faker_double"
     }

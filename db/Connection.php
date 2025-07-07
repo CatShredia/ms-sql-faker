@@ -195,7 +195,7 @@ class Connection
                 $hasRows = true;
                 echo "<tr>";
                 foreach ($rowData as $value) {
-                    echo "<td>" . htmlspecialchars($value !== null ? (string)$value : '') . "</td>";
+                    echo "<td>" . htmlspecialchars($value !== null ? (string) $value : '') . "</td>";
                 }
                 echo "</tr>";
             }
@@ -253,7 +253,7 @@ class Connection
 
         while ($rowTable = sqlsrv_fetch_array($stmtTables, SQLSRV_FETCH_ASSOC)) {
             $tableName = $rowTable['TABLE_NAME'];
-            echo "<h3 id=\"$tableName\">$tableName</h3>";
+            echo "<input type='text' readonly disabled id=\"$tableName\" value=\"$tableName\"></input>";
 
             // Получаем информацию о PK/FK
             $keyConstraints = $this->getKeyConstraints($tableName);
@@ -270,7 +270,7 @@ class Connection
             }
 
             // Поле для ввода количества записей
-            $count = isset($savedConfig[$tableName]['_record_count']) ? (int)$savedConfig[$tableName]['_record_count'] : 10;
+            $count = isset($savedConfig[$tableName]['_record_count']) ? (int) $savedConfig[$tableName]['_record_count'] : 10;
             echo "<label>Количество записей: 
                 <input type='number' name='fill_type[{$tableName}][_record_count]' value='$count' min='1' style='width: 60px;' />
               </label><br><br>";
@@ -299,13 +299,13 @@ class Connection
                 echo "<tr>
                     <td>$name</td>
                     <td>$dataType</td>
-                    <td><span class='example-seed'>" . htmlspecialchars((string)$exampleSeed) . "</span></td>
+                    <td><span class='example-seed'>" . htmlspecialchars((string) $exampleSeed) . "</span></td>
                     <td>";
 
                 if ($keyType === 'PK') {
-                    echo "<em title='Первичный ключ'>PK</em>";
+                    echo "<input readonly name=\"fill_type[{$tableName}][{$name}]\" value='PK'></input>";
                 } elseif ($keyType === 'FK') {
-                    echo "<em title='Внешний ключ'>FK</em>";
+                    echo "<input readonly name=\"fill_type[{$tableName}][{$name}]\" value='FK'></input>";
                 } else {
                     echo "<select name=\"fill_type[{$tableName}][{$name}]\" class=\"fill-type-select\">";
                     foreach ($fillTypes as $key => $label) {
@@ -323,7 +323,6 @@ class Connection
             sqlsrv_free_stmt($stmtColumns);
         }
 
-        echo "<button type='submit'>Сохранить типы заполнения</button>";
         echo "</form>";
 
         sqlsrv_free_stmt($stmtTables);
@@ -419,10 +418,41 @@ HTML;
         return $constraints;
     }
 
-    public static function SeedDB($dbName)
+    public function SeedDB($dbName, $data)
     {
-        $safeDbName = explode("=", $dbName)[1];
-        print_r($_POST);
-        echo $safeDbName;
+        echo "<br>";
+
+        // foreach ($data as $item_1) {
+        //     print_r($item_1);
+        //     echo "<tab>";
+        //     echo "<hr>";
+        //     foreach ($item_1 as $item_2) {
+        //         print_r($item_2);
+        //         echo "<br>";
+        //     }
+        // }
+
+        foreach ($data as $item_1) {
+
+            $count = $item_1["_record_count"];
+            unset($item_1["_record_count"]);
+
+            foreach ($item_1 as $key => $type) {
+                $insertData = array();
+                echo $key . " " . $type;
+                echo "<br>";
+                for ($i = 0; $i < $count; $i++) {
+                    if ($type == "PK") {
+                        $insertData["ID"] = $i;
+                    } else {
+                        $insertData[$key] = $this->fakerSeeder->getDataFromFillType($type);
+                    }
+                    // echo "insert - " . $insertData[$key];
+                    print_r($insertData);
+                    echo "<br>";
+                }
+            }
+            echo "<hr>";
+        }
     }
 }

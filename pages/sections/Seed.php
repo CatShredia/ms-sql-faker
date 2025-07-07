@@ -1,7 +1,7 @@
 <section class="table-show">
     <div class="tables">
-        <form method="post" action="/seeding?<?= htmlspecialchars($params) ?>">
-            <button type='submit'>Заполнить</button>
+        <form method="post" action="/seed?<?= htmlspecialchars($params) ?>">
+            <button type='submit'>Заполнить и сохранить</button>
             <?php
             $connectionClass->renderAllDataTypes($params);
             ?>

@@ -151,6 +151,8 @@ class FakerSeeder
                 return $this->faker->sentence();
             case 'faker_uuid':
                 return $this->faker->uuid();
+            case '_record_count':
+                return null;
             default:
                 return 'custom';
         }

@@ -39,16 +39,17 @@ function handleRequest($connectionClass)
         switch (true) {
             case $uri === 'seed':
                 $data = $_POST['fill_type'] ?? [];
+                echo "<br>";
+                echo "<br>";
                 $param_uri = explode("=", $param_uri)[1];;
 
                 $filePath = __DIR__ . '/resources/format_jsons/' . $param_uri . '.json';
 
-                echo $filePath;
+                $connectionClass->SeedDB($param_uri, $data);
                 // Сохраняем в JSON
                 file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
                 break;
             case 'seeding':
-                $connectionClass->SeedDB($param_uri);
                 break;
             case 'drop-db':
                 $dbName = $_GET['dbName'] ?? null;
