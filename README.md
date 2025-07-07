@@ -1,3 +1,4 @@
 #TODO
 
-- connection problem
+- problem format of example types
+- problem with fk seeding

@@ -426,41 +426,29 @@ HTML;
 
     public function SeedDB($dbName, $data)
     {
-        print_r($data);
-        echo "<br>";
 
         // foreach ($data as $item_1) {
-        //     print_r($item_1);
-        //     echo "<tab>";
-        //     echo "<hr>";
-        //     foreach ($item_1 as $item_2) {
-        //         print_r($item_2);
+
+        //     $count = $item_1["_record_count"];
+        //     unset($item_1["_record_count"]);
+
+        //     foreach ($item_1 as $key => $type) {
+        //         $insertData = array();
+        //         echo $key . " " . $type;
         //         echo "<br>";
+        //         for ($i = 0; $i < $count; $i++) {
+        //             if ($type == "PK") {
+        //                 $insertData["ID"] = $i;
+        //             } else {
+        //                 $insertData[$key] = $this->fakerSeeder->getDataFromFillType($type);
+        //             }
+        //             // echo "insert - " . $insertData[$key];
+        //             print_r($insertData);
+        //             echo "<br>";
+        //         }
         //     }
+        //     echo "<hr>";
         // }
-
-        foreach ($data as $item_1) {
-
-            $count = $item_1["_record_count"];
-            unset($item_1["_record_count"]);
-
-            foreach ($item_1 as $key => $type) {
-                $insertData = array();
-                echo $key . " " . $type;
-                echo "<br>";
-                for ($i = 0; $i < $count; $i++) {
-                    if ($type == "PK") {
-                        $insertData["ID"] = $i;
-                    } else {
-                        $insertData[$key] = $this->fakerSeeder->getDataFromFillType($type);
-                    }
-                    // echo "insert - " . $insertData[$key];
-                    print_r($insertData);
-                    echo "<br>";
-                }
-            }
-            echo "<hr>";
-        }
 
         // Проходим по каждой таблице из $data
         foreach ($data as $tableName => $tableStructure) {
@@ -476,6 +464,12 @@ HTML;
             foreach ($tableStructure as $column => $type) {
                 $columns[] = $column;
                 $types[] = $type;
+            }
+
+            // Проверяем, что колонки существуют
+            if (empty($columns)) {
+                echo "<p style='color:orange;'>⚠️ Пропущена таблица [$tableName]: нет определённых колонок.</p><hr>";
+                continue;
             }
 
             // Подготавливаем SQL-запрос
@@ -518,11 +512,12 @@ HTML;
                 $stmt = sqlsrv_query($this->conn, $sql, $params);
 
                 if ($stmt === false) {
-                    echo "<p style='color:red;'><strong>Ошибка при вставке в таблицу [$tableName]</strong></p>";
+                    echo "<p style='color:red;'><strong>❌ Ошибка при вставке в таблицу [$tableName]</strong></p>";
                     echo "<pre>";
                     print_r(sqlsrv_errors());
                     echo "</pre>";
-                    die("Прервано на итерации $i");
+                    echo "<p>Продолжаем выполнение...</p>";
+                    break; // выходим из цикла вставки для этой таблицы
                 }
             }
 
