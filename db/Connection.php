@@ -171,11 +171,17 @@ class Connection
             echo "<h3 id=\"$tableName\">$tableName</h3>";
 
             // Выбираем данные из таблицы
-            $sqlData = "SELECT  * FROM $safeTableName ORDER BY ID";
+            $sqlData = "SELECT  * FROM $safeTableName";
             $stmtData = sqlsrv_query($this->conn, $sqlData);
 
             if ($stmtData === false) {
-                echo "<p style='color:red;'>Ошибка выполнения запроса для таблицы $tableName</p>";
+                $errors = sqlsrv_errors();
+
+                echo "<p style='color:red;'>Ошибка выполнения запроса для таблицы $tableName:</p>";
+                echo "<pre>";
+                print_r($errors); // Выводим все ошибки
+                echo "</pre>";
+
                 continue;
             }
 
