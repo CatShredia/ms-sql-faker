@@ -171,7 +171,7 @@ class Connection
             echo "<h3 id=\"$tableName\">$tableName</h3>";
 
             // Выбираем данные из таблицы
-            $sqlData = "SELECT TOP 5 * FROM $safeTableName";
+            $sqlData = "SELECT  * FROM $safeTableName ORDER BY ID";
             $stmtData = sqlsrv_query($this->conn, $sqlData);
 
             if ($stmtData === false) {
@@ -420,6 +420,7 @@ HTML;
 
     public function SeedDB($dbName, $data)
     {
+        print_r($data);
         echo "<br>";
 
         // foreach ($data as $item_1) {
@@ -453,6 +454,53 @@ HTML;
                 }
             }
             echo "<hr>";
+        }
+
+        // Проходим по каждой таблице из $data
+        foreach ($data as $tableName => $tableStructure) {
+            $count = $tableStructure['_record_count'] ?? 10;
+            unset($tableStructure['_record_count']); // убираем служебное поле
+
+            // Собираем поля
+            $columns = [];
+            $types = [];
+
+            foreach ($tableStructure as $column => $type) {
+                $columns[] = $column;
+                $types[] = $type;
+            }
+
+            // Подготавливаем SQL-запрос
+            $columnsWithBrackets = array_map(fn($col) => "[$col]", $columns);
+            $placeholders = implode(', ', array_fill(0, count($columns), '?'));
+
+            $sql = "USE [$dbName] INSERT INTO dbo.[$tableName] (" . implode(', ', $columnsWithBrackets) . ") VALUES ($placeholders)";
+
+            echo "<h3>Вставка в таблицу: $tableName</h3>";
+
+            // Генерируем данные и вставляем в БД
+            for ($i = 0; $i < $count; $i++) {
+                $params = [];
+
+                foreach ($tableStructure as $column => $type) {
+                    if ($type === 'PK') {
+                        $params[] = $i;
+                    } elseif ($type === 'FK') {
+                        $params[] = rand(1, 9); // можно сделать динамический выбор существующего ID
+                    } else {
+                        // Предполагается, что $this->fakerSeeder умеет обрабатывать типы
+                        $params[] = $this->fakerSeeder->getDataFromFillType($type);
+                    }
+                }
+
+                // Выполняем запрос
+                $stmt = sqlsrv_query($this->conn, $sql, $params);
+
+                if ($stmt === false) {
+                    echo "Ошибка при вставке в таблицу [$tableName]:<br>";
+                    die(print_r(sqlsrv_errors(), true));
+                }
+            }
         }
     }
 }
